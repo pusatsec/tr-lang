@@ -127,7 +127,8 @@ class CodeGen:
             hedef = ", ".join(node.degisken)
         else:
             hedef = node.degisken
-        satirlar = [f"{self.girinti()}for {hedef} in {self._uret(node.iterable)}:"]
+        icin_kelimesi = "async for" if node.eszamansiz else "for"
+        satirlar = [f"{self.girinti()}{icin_kelimesi} {hedef} in {self._uret(node.iterable)}:"]
         satirlar.append(self._blok_uret(node.govde))
         return "\n".join(satirlar)
 
@@ -228,6 +229,14 @@ class CodeGen:
             return f"{self.girinti()}assert {self._uret(node.kosul)}, {self._uret(node.mesaj)}"
         return f"{self.girinti()}assert {self._uret(node.kosul)}"
 
+    def _FirlatDeyimi(self, node):
+        if node.ifade is None:
+            return f"{self.girinti()}raise"
+        satir = f"{self.girinti()}raise {self._uret(node.ifade)}"
+        if node.kaynaktan is not None:
+            satir += f" from {self._uret(node.kaynaktan)}"
+        return satir
+
     def _EslestirDeyimi(self, node):
         satirlar = [f"{self.girinti()}match {self._uret(node.deger)}:"]
         self.girinti_seviyesi += 1
@@ -257,7 +266,8 @@ class CodeGen:
             if isim:
                 parca += f" as {isim}"
             parcalar.append(parca)
-        satirlar = [f"{self.girinti()}with {', '.join(parcalar)}:"]
+        ile_kelimesi = "async with" if node.eszamansiz else "with"
+        satirlar = [f"{self.girinti()}{ile_kelimesi} {', '.join(parcalar)}:"]
         satirlar.append(self._blok_uret(node.govde))
         return "\n".join(satirlar)
 

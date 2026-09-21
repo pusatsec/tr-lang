@@ -42,6 +42,7 @@ class TokenType:
     WALRUS = "WALRUS"      # :=
     ESZAMANSIZ = "ESZAMANSIZ"  # async
     BEKLE = "BEKLE"        # await
+    FIRLAT = "FIRLAT"      # raise
 
     # Temel
     IDENT = "IDENT"
@@ -117,6 +118,7 @@ KEYWORDS = {
     "hal": TokenType.HAL,
     "eszamansiz": TokenType.ESZAMANSIZ,
     "bekle": TokenType.BEKLE,
+    "firlat": TokenType.FIRLAT,
 }
 
 

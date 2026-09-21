@@ -109,6 +109,8 @@ class Parser:
             return self.nonlocal_deyimi()
         if tip == T.DOGRULA:
             return self.dogrula_deyimi()
+        if tip == T.FIRLAT:
+            return self.firlat_deyimi()
         if tip == T.ESLESTIR:
             return self.eslestir_deyimi()
         if tip == T.ILE:
@@ -141,11 +143,21 @@ class Parser:
 
     def eszamansiz_deyimi(self):
         self.ilerle()  # eszamansiz
-        if self.tip() != T.ISLEV:
-            raise ParserHatasi(f"Satir {self.su_an().satir}: 'eszamansiz' sonrasi 'islev' bekleniyordu")
-        node = self.islev_tanimi()
-        node.eszamansiz = True
-        return node
+        if self.tip() == T.ISLEV:
+            node = self.islev_tanimi()
+            node.eszamansiz = True
+            return node
+        if self.tip() == T.ICIN:
+            node = self.icin_deyimi()
+            node.eszamansiz = True
+            return node
+        if self.tip() == T.ILE:
+            node = self.ile_deyimi()
+            node.eszamansiz = True
+            return node
+        raise ParserHatasi(
+            f"Satir {self.su_an().satir}: 'eszamansiz' sonrasi 'islev', 'icin' veya 'ile' bekleniyordu"
+        )
 
     def eger_deyimi(self):
         self.ilerle()  # eger
@@ -325,6 +337,17 @@ class Parser:
             self.ilerle()
             mesaj = self.ifade()
         return DogrulaDeyimi(kosul, mesaj)
+
+    def firlat_deyimi(self):
+        self.ilerle()  # firlat
+        if self.tip() in (T.YENISATIR, T.EOF, T.CIKINTI):
+            return FirlatDeyimi(None)
+        ifade = self.ifade()
+        kaynaktan = None
+        if self.tip() == T.IDENT and self.su_an().deger == "kaynaktan":
+            self.ilerle()
+            kaynaktan = self.ifade()
+        return FirlatDeyimi(ifade, kaynaktan)
 
     def eslestir_deyimi(self):
         self.ilerle()  # eslestir

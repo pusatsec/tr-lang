@@ -4,6 +4,8 @@ Python'un üzerine inşa edilmiş, **Türkçe anahtar kelimelerle kod yazmanı s
 
 > 🚧 Bu proje aktif olarak geliştiriliyor (work in progress).
 
+**💬 Hata mı buldun? Bir özellik mi eksik? [Issues sekmesinden](https://github.com/pusatsec/tr-lang/issues/new) yazabilirsin — her türlü geri bildirim, öneri ve soru için açık.**
+
 ## Örnek
 
 ```
@@ -118,8 +120,9 @@ ornekler/             - örnek .trl programları
 
 ## Katkıda Bulunma
 
-Bu bir öğrenme projesi olarak başladı, ama gerçek katkılara açık. Issue açabilir,
-pull request gönderebilirsin.
+Bu bir öğrenme projesi olarak başladı, ama gerçek katkılara açık.
+[Issue açabilir](https://github.com/pusatsec/tr-lang/issues/new) (hata bildirimi, özellik
+isteği, soru — hepsi olur) ya da pull request gönderebilirsin.
 
 ## Lisans
 

@@ -146,8 +146,9 @@ class IkenDeyimi(Node):  # while
         self.kosul, self.govde = kosul, govde
 
 class IcinDeyimi(Node):  # for
-    def __init__(self, degisken, iterable, govde):
+    def __init__(self, degisken, iterable, govde, eszamansiz=False):
         self.degisken, self.iterable, self.govde = degisken, iterable, govde
+        self.eszamansiz = eszamansiz
 
 class IslevTanimi(Node):  # def
     def __init__(self, isim, parametreler, govde, varsayilanlar=None, dekoratorler=None, eszamansiz=False, param_tipleri=None, donus_tipi=None):
@@ -203,6 +204,10 @@ class DogrulaDeyimi(Node):  # assert
     def __init__(self, kosul, mesaj=None):
         self.kosul, self.mesaj = kosul, mesaj
 
+class FirlatDeyimi(Node):  # raise
+    def __init__(self, ifade=None, kaynaktan=None):
+        self.ifade, self.kaynaktan = ifade, kaynaktan
+
 class EslestirDeyimi(Node):  # match
     def __init__(self, deger, durumlar):
         self.deger = deger
@@ -219,6 +224,7 @@ class DesenVeya(Node):  # match icinde: desen1 veya desen2
     def __init__(self, secenekler): self.secenekler = secenekler
 
 class IleDeyimi(Node):  # with
-    def __init__(self, ifadeler, govde):
+    def __init__(self, ifadeler, govde, eszamansiz=False):
         self.ifadeler = ifadeler  # [(ifade, isim_veya_None), ...]
         self.govde = govde
+        self.eszamansiz = eszamansiz
