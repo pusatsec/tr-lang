@@ -39,12 +39,9 @@ TURKCE_HATA_ACIKLAMALARI = {
 }
 
 
-def turkce_hata_mesaji(exc):
-    """Bir Python exception'ini Turkce, ogrenci-dostu bir mesaja cevirir."""
-    ingilizce_isim = type(exc).__name__
+def _turkce_mesaj_olustur(ingilizce_isim, detay):
     turkce_isim = TURKCE_HATA_ISIMLERI.get(ingilizce_isim, ingilizce_isim)
     aciklama = TURKCE_HATA_ACIKLAMALARI.get(ingilizce_isim)
-    detay = str(exc)
     if aciklama:
         if detay:
             return f"{turkce_isim}: {aciklama} ({detay})"
@@ -52,6 +49,69 @@ def turkce_hata_mesaji(exc):
     if detay:
         return f"{turkce_isim}: {detay}"
     return turkce_isim
+
+
+def turkce_hata_mesaji(exc):
+    """Bir Python exception'ini Turkce, ogrenci-dostu bir mesaja cevirir."""
+    return _turkce_mesaj_olustur(type(exc).__name__, str(exc))
+
+
+class TrlangHataSarici:
+    """Eskiden kullanilan sarma sinifi; artik _trhata dogrudan __class__
+    degistirerek calisiyor ama geriye donuk uyumluluk icin birakildi."""
+
+    def __init__(self, orijinal):
+        object.__setattr__(self, "_orijinal", orijinal)
+
+    def __str__(self):
+        return turkce_hata_mesaji(self._orijinal)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __getattr__(self, isim):
+        return getattr(self._orijinal, isim)
+
+    def __eq__(self, other):
+        return self._orijinal == other
+
+    @property
+    def orijinal_hata(self):
+        return self._orijinal
+
+
+_TURKCE_HATA_SINIF_ONBELLEGI = {}
+
+
+def _trhata(exc):
+    """Yakalanan hatayla ayni bilgilere sahip, ama str()/repr() cagrildiginda
+    Turkce mesaj gosteren yeni bir hata nesnesi olusturur. tur(hata) ve
+    ornek_mi(hata, X) hala dogru sonuc verir, cunku yeni sinif orijinalin
+    alt sinifidir (Python yerlesik exception'larda __class__ degistirmeye
+    izin vermedigi icin bu sekilde yapiyoruz)."""
+    orijinal_sinif = type(exc)
+    yeni_sinif = _TURKCE_HATA_SINIF_ONBELLEGI.get(orijinal_sinif)
+    if yeni_sinif is None:
+        def _yeni_str(self, _osinif=orijinal_sinif):
+            return _turkce_mesaj_olustur(_osinif.__name__, _osinif.__str__(self))
+
+        yeni_sinif = type(
+            orijinal_sinif.__name__,
+            (orijinal_sinif,),
+            {
+                "__str__": _yeni_str,
+                "__repr__": _yeni_str,
+            },
+        )
+        _TURKCE_HATA_SINIF_ONBELLEGI[orijinal_sinif] = yeni_sinif
+    try:
+        yeni_hata = yeni_sinif(*exc.args)
+        yeni_hata.__dict__.update(getattr(exc, "__dict__", {}))
+        yeni_hata.__traceback__ = exc.__traceback__
+        yeni_hata.__cause__ = exc.__cause__
+        return yeni_hata
+    except Exception:
+        return exc  # olusturulamazsa orijinal hatayi oldugu gibi don
 
 
 def _yazdir(*args, **kwargs):
@@ -90,6 +150,8 @@ def _kume(*args):
     return set(args[0])
 
 TRLANG_BUILTINS = {
+    "_trhata": _trhata,
+
     # Girdi / cikti
     "yazdir": _yazdir,
     "girdi": input,
@@ -152,3 +214,41 @@ TRLANG_BUILTINS = {
     "OznitelikHatasi": AttributeError,
     "DosyaBulunamadiHatasi": FileNotFoundError,
 }
+
+# Standart kutuphane modul isimlerinin Turkce karsiliklari.
+# "getir matematik" dedigin zaman arka planda "import math as matematik"
+# calisir, yani kod icinde de Turkce isimle (matematik.sqrt(16) gibi)
+# erisebilirsin. Gercek Ingilizce ismiyle de (getir math) calismaya devam eder.
+TURKCE_MODUL_ISIMLERI = {
+    "matematik": "math",
+    "rastgele": "random",
+    "zaman": "time",
+    "tarih": "datetime",
+    "sistem": "sys",
+    "isletim_sistemi": "os",
+    "regex": "re",
+    "duzenli_ifade": "re",
+    "koleksiyonlar": "collections",
+    "fonksiyonel_araclar": "functools",
+    "yinelemeler": "itertools",
+    "istatistik": "statistics",
+    "kopyala": "copy",
+    "dosya_yolu": "pathlib",
+    "json_verisi": "json",
+    "tablo_verisi": "csv",
+    "veritabani": "sqlite3",
+    "agirlik_kodlama": "hashlib",
+    "kripto": "hashlib",
+    "soket": "socket",
+    "iplik": "threading",
+    "surec": "multiprocessing",
+    "test": "unittest",
+    "hata_ayikla": "pdb",
+    "komut_satiri": "argparse",
+    "ortam_degiskenleri": "os",
+    "sikistirma": "zipfile",
+    "web_istek": "urllib",
+    "e_posta": "email",
+    "turkce_karakter": "locale",
+}
+

@@ -33,6 +33,15 @@ class TokenType:
     GLOBAL = "GLOBAL"      # global
     LAMBDA = "LAMBDA"      # lambda -> "kisa_islev"
     PASS = "PASS"          # gec
+    ILE = "ILE"            # with
+    URET = "URET"          # yield
+    DOGRULA = "DOGRULA"    # assert
+    NONLOCAL = "NONLOCAL"  # nonlocal
+    ESLESTIR = "ESLESTIR"  # match
+    HAL = "HAL"            # case
+    WALRUS = "WALRUS"      # :=
+    ESZAMANSIZ = "ESZAMANSIZ"  # async
+    BEKLE = "BEKLE"        # await
 
     # Temel
     IDENT = "IDENT"
@@ -72,6 +81,8 @@ class TokenType:
     VIRGUL = "VIRGUL"     # ,
     IKINOKTA = "IKINOKTA" # :
     NOKTA = "NOKTA"       # .
+    AT = "AT"             # @
+    OK = "OK"             # ->
 
 
 KEYWORDS = {
@@ -98,6 +109,14 @@ KEYWORDS = {
     "getir": TokenType.GETIR,
     "global": TokenType.GLOBAL,
     "gec": TokenType.PASS,
+    "ile": TokenType.ILE,
+    "uret": TokenType.URET,
+    "dogrula": TokenType.DOGRULA,
+    "nonlocal": TokenType.NONLOCAL,
+    "eslestir": TokenType.ESLESTIR,
+    "hal": TokenType.HAL,
+    "eszamansiz": TokenType.ESZAMANSIZ,
+    "bekle": TokenType.BEKLE,
 }
 
 
@@ -329,6 +348,8 @@ class Lexer:
             ("-", "="): TokenType.EKSI_ESIT,
             ("*", "="): TokenType.CARPI_ESIT,
             ("/", "="): TokenType.BOL_ESIT,
+            (":", "="): TokenType.WALRUS,
+            ("-", ">"): TokenType.OK,
         }
         if (c, n) in iki_karakter:
             self.ilerle()
@@ -347,6 +368,7 @@ class Lexer:
             ",": TokenType.VIRGUL,
             ":": TokenType.IKINOKTA,
             ".": TokenType.NOKTA,
+            "@": TokenType.AT,
         }
         if c in tek_karakter:
             self.token_ekle(tek_karakter[c])

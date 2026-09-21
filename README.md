@@ -2,7 +2,7 @@
 
 Python'un üzerine inşa edilmiş, **Türkçe anahtar kelimelerle kod yazmanı sağlayan** bir programlama dili.
 
-> 🚧 Bu proje aktif olarak geliştiriliyor (work in progress). Temel özellikler çalışıyor, bazı ileri seviye özellikler henüz eklenmedi. Aşağıda hem neyin çalıştığını hem de eksikleri şeffafça listeliyoruz.
+> 🚧 Bu proje aktif olarak geliştiriliyor (work in progress).
 
 ## Örnek
 
@@ -13,11 +13,16 @@ islev selamla(isim):
 yazdir(selamla("Dünya"))
 
 sayilar = [1, 2, 3, 4, 5]
-toplam = 0
-icin s icinde sayilar:
-    eger s % 2 == 0:
-        toplam += s
-yazdir(f"Cift sayilarin toplami: {toplam}")
+toplam = topla(s * s icin s icinde sayilar eger s % 2 == 0)
+yazdir(f"Cift sayilarin kareleri toplami: {toplam}")
+
+eslestir toplam:
+    hal 0:
+        yazdir("Sifir")
+    hal x eger x > 50:
+        yazdir("Buyuk bir sayi")
+    hal _:
+        yazdir("Normal bir sayi")
 ```
 
 ## Nasıl çalışıyor?
@@ -32,7 +37,7 @@ Tr-lang kodu → Lexer (tokenlara ayırma) → Parser (AST oluşturma) → Codeg
 
 ## Kurulum ve Çalıştırma
 
-Python 3.8+ gerekli, başka bağımlılık yok.
+Python 3.10+ önerilir (match/case için), başka bağımlılık yok.
 
 ```bash
 # Bir dosya çalıştırmak için:
@@ -43,6 +48,9 @@ python3 trlang.py dosya.trl --python-goster
 
 # İnteraktif kabuk (REPL):
 python3 repl.py
+
+# Otomatik test paketini çalıştırmak için:
+python3 test_calistir.py
 ```
 
 ## Desteklenen Özellikler
@@ -54,43 +62,58 @@ python3 repl.py
 | `icin ... icinde` | for ... in |
 | `islev` | def |
 | `dondur` | return |
+| `uret` / `uret hepsinden` | yield / yield from |
 | `sinif` | class |
 | `dene` / `yakala` / `sonunda` | try / except / finally |
 | `dur` / `devam` / `gec` | break / continue / pass |
 | `dogru` / `yanlis` / `bos` | True / False / None |
 | `ve` / `veya` / `degil` | and / or / not |
-| `icinde` | in |
+| `icinde` / `degil icinde` | in / not in |
 | `getir` | import |
+| `ile ... olarak` | with ... as |
+| `dogrula` | assert |
+| `nonlocal` | nonlocal |
+| `eslestir` / `hal` | match / case |
+| `eszamansiz` / `bekle` | async / await |
+| `X eger K degilse Y` | X if K else Y (ternary) |
+| `:=` | walrus operatörü |
 
-Ayrıca: listeler, sözlükler, tuple'lar, dilimleme (`liste[1:3]`), `+=`/`-=`/`*=`/`/=`,
-f-string (`f"Değer: {x}"`), Türkçeleştirilmiş hata mesajları, ve yaygın yerleşik
-fonksiyonlar (`yazdir`, `uzunluk`, `aralik`, `tur`, `tamsayi` vb. — tam liste için
-`trlang_builtins.py`).
+Ayrıca: listeler, sözlükler, tuple'lar, set'ler, dilimleme (`liste[1:3]`), comprehension
+(liste/sözlük/set/generator), `+=`/`-=`/`*=`/`/=`, `*args`/`**kwargs`, decorator (`@...`),
+çoklu kalıtım + `super()`, çoklu exception yakalama, f-string (format belirteçleri dahil,
+`{x:.2f}`), type hinting, Türkçeleştirilmiş hata mesajları, ve standart kütüphanenin
+popüler modüllerine Türkçe isim (`getir matematik`, `getir rastgele`, `getir zaman` vb.
+tam liste için `trlang_builtins.py`).
+
+## Testler
+
+`testler/` klasöründe her `.trl` dosyasının bir `.beklenen` (beklenen çıktı) eşi var.
+Yeni bir özellik eklediğinde veya bir şeyi değiştirdiğinde:
+
+```bash
+python3 test_calistir.py            # tum testleri calistir, kirmizi/yesil goster
+python3 test_calistir.py --guncelle # yeni davranisi 'dogru cevap' olarak kaydet
+```
 
 ## Henüz Eklenmedi
 
-Şeffaf olalım — bunlar bilinen eksikler, katkıda bulunmak istersen iyi başlangıç noktaları:
-
-- List/dict comprehension (`[x*x for x in liste]` gibi kısa yazımlar)
-- Decorator desteği (`@bir_şey`)
-- `with` deyimi (bağlam yöneticileri)
-- `yield` / generator desteği
-- `dene/yakala` içinde yakalanan hatanın kendisi hâlâ İngilizce mesaj veriyor
-- f-string içinde iç içe tırnak kullanımı (`f"{sozluk['anahtar']}"`) sorunlu olabilir
-- Standart kütüphane modül isimleri Türkçeleştirilmedi (`getir math` çalışır, `getir matematik` çalışmaz)
-- Otomatik/düzenli test paketi yok, şu ana kadar elle test edildi
+- Metaclass, `__slots__` gibi çok ileri seviye OOP özellikleri
+- `async for` / `async with` (sadece `async def` / `await` var)
+- Tam standart kütüphane kapsamı (şu an ~30 popüler modül Türkçeleştirildi)
 
 ## Proje Yapısı
 
 ```
-lexer.py            - kaynak kodu token'lara ayırır
-ast_nodes.py         - AST (soyut sözdizim ağacı) düğüm tanımları
-parser.py            - token'lardan AST oluşturur
-codegen.py           - AST'den gerçek Python kodu üretir
-trlang_builtins.py   - Türkçe yerleşik fonksiyonlar ve hata mesajları
-trlang.py            - ana çalıştırıcı (dosya çalıştırma)
-repl.py              - interaktif kabuk
-ornekler/            - örnek .trl programları
+lexer.py             - kaynak kodu token'lara ayırır
+ast_nodes.py          - AST (soyut sözdizim ağacı) düğüm tanımları
+parser.py             - token'lardan AST oluşturur
+codegen.py            - AST'den gerçek Python kodu üretir
+trlang_builtins.py    - Türkçe yerleşik fonksiyonlar, hata mesajları, modül isimleri
+trlang.py             - ana çalıştırıcı (dosya çalıştırma)
+repl.py               - interaktif kabuk
+test_calistir.py      - otomatik test paketi
+testler/              - test programları + beklenen çıktıları
+ornekler/             - örnek .trl programları
 ```
 
 ## Katkıda Bulunma
@@ -101,3 +124,4 @@ pull request gönderebilirsin.
 ## Lisans
 
 MIT — [LICENSE](LICENSE) dosyasına bak.
+

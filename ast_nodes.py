@@ -20,6 +20,10 @@ class FStringLiteral(Node):
 class BoolLiteral(Node):
     def __init__(self, deger): self.deger = deger
 
+class KosulluIfade(Node):  # ternary: X eger kosul degilse Y
+    def __init__(self, dogru_deger, kosul, yanlis_deger):
+        self.dogru_deger, self.kosul, self.yanlis_deger = dogru_deger, kosul, yanlis_deger
+
 class NoneLiteral(Node):
     pass
 
@@ -28,6 +32,26 @@ class Identifier(Node):
 
 class ListeLiteral(Node):
     def __init__(self, elemanlar): self.elemanlar = elemanlar
+
+class ListeComprehension(Node):
+    def __init__(self, ifade, degisken, iterable, kosul=None):
+        self.ifade, self.degisken, self.iterable, self.kosul = ifade, degisken, iterable, kosul
+
+class SozlukComprehension(Node):
+    def __init__(self, anahtar, deger, degisken, iterable, kosul=None):
+        self.anahtar, self.deger = anahtar, deger
+        self.degisken, self.iterable, self.kosul = degisken, iterable, kosul
+
+class GeneratorIfadesi(Node):  # (x for x in liste)
+    def __init__(self, ifade, degisken, iterable, kosul=None):
+        self.ifade, self.degisken, self.iterable, self.kosul = ifade, degisken, iterable, kosul
+
+class KumeLiteral(Node):  # {1, 2, 3}
+    def __init__(self, elemanlar): self.elemanlar = elemanlar
+
+class KumeComprehension(Node):  # {x for x in liste}
+    def __init__(self, ifade, degisken, iterable, kosul=None):
+        self.ifade, self.degisken, self.iterable, self.kosul = ifade, degisken, iterable, kosul
 
 class SozlukLiteral(Node):
     def __init__(self, ciftler): self.ciftler = ciftler  # [(key, value), ...]
@@ -38,6 +62,11 @@ class TupleLiteral(Node):
 class BinOp(Node):
     def __init__(self, sol, op, sag):
         self.sol, self.op, self.sag = sol, op, sag
+
+class KarsilastirmaZinciri(Node):  # a < b < c gibi zincirleme karsilastirmalar
+    def __init__(self, ilk, zincir):
+        self.ilk = ilk
+        self.zincir = zincir  # [(op_tip, operand_node), ...]
 
 class UnaryOp(Node):
     def __init__(self, op, ifade):
@@ -74,6 +103,22 @@ class LambdaIfade(Node):
     def __init__(self, parametreler, govde):
         self.parametreler, self.govde = parametreler, govde
 
+class YuruyenAtama(Node):  # walrus: (x := ifade)
+    def __init__(self, isim, deger): self.isim, self.deger = isim, deger
+
+class BeklemeIfadesi(Node):  # await ifade
+    def __init__(self, ifade): self.ifade = ifade
+
+class TipliAtama(Node):  # isim: tur = deger  (type hint'li atama/tanim)
+    def __init__(self, hedef, tur, deger=None):
+        self.hedef, self.tur, self.deger = hedef, tur, deger
+
+class YildizAcma(Node):  # *args kullanimda acma: fonksiyon(*liste)
+    def __init__(self, ifade): self.ifade = ifade
+
+class CiftYildizAcma(Node):  # **kwargs kullanimda acma: fonksiyon(**sozluk)
+    def __init__(self, ifade): self.ifade = ifade
+
 # ---- Deyimler (Statements) ----
 class Program(Node):
     def __init__(self, govde): self.govde = govde
@@ -105,18 +150,29 @@ class IcinDeyimi(Node):  # for
         self.degisken, self.iterable, self.govde = degisken, iterable, govde
 
 class IslevTanimi(Node):  # def
-    def __init__(self, isim, parametreler, govde, varsayilanlar=None):
+    def __init__(self, isim, parametreler, govde, varsayilanlar=None, dekoratorler=None, eszamansiz=False, param_tipleri=None, donus_tipi=None):
         self.isim = isim
         self.parametreler = parametreler
         self.govde = govde
         self.varsayilanlar = varsayilanlar or {}
+        self.dekoratorler = dekoratorler or []
+        self.eszamansiz = eszamansiz
+        self.param_tipleri = param_tipleri or {}
+        self.donus_tipi = donus_tipi
 
 class DondurDeyimi(Node):  # return
     def __init__(self, deger): self.deger = deger
 
+class UretDeyimi(Node):  # yield
+    def __init__(self, deger): self.deger = deger
+
+class UretHepsindenDeyimi(Node):  # yield from
+    def __init__(self, ifade): self.ifade = ifade
+
 class SinifTanimi(Node):  # class
-    def __init__(self, isim, ustler, govde):
+    def __init__(self, isim, ustler, govde, dekoratorler=None):
         self.isim, self.ustler, self.govde = isim, ustler, govde
+        self.dekoratorler = dekoratorler or []
 
 class DeneDeyimi(Node):  # try/except/finally
     def __init__(self, govde, yakalamalar, sonunda_govde):
@@ -139,3 +195,30 @@ class GetirDeyimi(Node):  # import
 
 class GlobalDeyimi(Node):
     def __init__(self, isimler): self.isimler = isimler
+
+class NonlocalDeyimi(Node):
+    def __init__(self, isimler): self.isimler = isimler
+
+class DogrulaDeyimi(Node):  # assert
+    def __init__(self, kosul, mesaj=None):
+        self.kosul, self.mesaj = kosul, mesaj
+
+class EslestirDeyimi(Node):  # match
+    def __init__(self, deger, durumlar):
+        self.deger = deger
+        self.durumlar = durumlar  # [(desen, guard_veya_None, govde), ...]
+
+class DesenYakala(Node):  # match icinde: degisken yakalama veya '_' joker
+    def __init__(self, isim): self.isim = isim
+
+class DesenDizi(Node):  # match icinde: (a, b) veya [a, b] desen
+    def __init__(self, elemanlar, parantez_mi):
+        self.elemanlar, self.parantez_mi = elemanlar, parantez_mi
+
+class DesenVeya(Node):  # match icinde: desen1 veya desen2
+    def __init__(self, secenekler): self.secenekler = secenekler
+
+class IleDeyimi(Node):  # with
+    def __init__(self, ifadeler, govde):
+        self.ifadeler = ifadeler  # [(ifade, isim_veya_None), ...]
+        self.govde = govde
